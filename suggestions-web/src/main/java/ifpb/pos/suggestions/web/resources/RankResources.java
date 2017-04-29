@@ -5,7 +5,7 @@
  */
 package ifpb.pos.suggestions.web.resources;
 
-import ifpb.pos.suggestions.models.HankedUser;
+import ifpb.pos.suggestions.models.RankedUser;
 import ifpb.pos.suggestions.services.UserService;
 import java.util.List;
 import javax.ejb.EJB;
@@ -32,8 +32,8 @@ public class RankResources {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getRank(){
-        List<HankedUser> allHankedUsers = userService.getAllHank();
-        GenericEntity<List<HankedUser>> entity = new GenericEntity<List<HankedUser>>(allHankedUsers) {
+        List<RankedUser> allHankedUsers = userService.getAllHank();
+        GenericEntity<List<RankedUser>> entity = new GenericEntity<List<RankedUser>>(allHankedUsers) {
         };
         return Response.ok().entity(entity).build();
     }
@@ -42,7 +42,7 @@ public class RankResources {
     @Path("{idUser}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUsersRank(@PathParam("idUser") String idUser){
-        HankedUser hankedUser = userService.getHankedUser(idUser);
+        RankedUser hankedUser = userService.getHankedUser(idUser);
         return Response.ok().entity(hankedUser).build();
     }
     

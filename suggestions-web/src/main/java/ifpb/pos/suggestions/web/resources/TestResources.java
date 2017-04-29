@@ -7,8 +7,6 @@ package ifpb.pos.suggestions.web.resources;
 
 import ifpb.pos.suggestions.models.GithubRepository;
 import ifpb.pos.suggestions.models.GithubUser;
-import ifpb.pos.suggestions.models.GithubWrapperUser;
-import ifpb.pos.suggestions.models.ImmutableGithubWrapperUser;
 import ifpb.pos.suggestions.services.GithubClient;
 import java.util.List;
 import javax.ejb.Stateless;

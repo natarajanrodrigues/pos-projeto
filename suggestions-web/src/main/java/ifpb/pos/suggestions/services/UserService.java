@@ -7,7 +7,7 @@ package ifpb.pos.suggestions.services;
 
 import ifpb.pos.suggestions.models.GithubRepository;
 import ifpb.pos.suggestions.models.GithubUser;
-import ifpb.pos.suggestions.models.HankedUser;
+import ifpb.pos.suggestions.models.RankedUser;
 import ifpb.pos.suggestions.models.UserApp;
 import ifpb.pos.suggestions.persistence.UserRepository;
 import java.util.List;
@@ -54,15 +54,16 @@ public class UserService {
         return githubClient.getAllUserReposByLanguage(user.getGithubAccount(), language);
     }
     
-    public List<HankedUser> getAllHank(){
+    public List<RankedUser> getAllHank(){
         //IMPLEMENTAR AINDA
         return null;
     }
     
-    public HankedUser getHankedUser(String userId){
+    public RankedUser getHankedUser(String userId){
         Long longId = new Long(userId);
         UserApp get = userRepository.get(longId);
-        return new HankedUser(longId, get.getGithubUser().getRank(), 1);
+        GithubUser githubUser = githubClient.getGithubUser(get.getGithubAccount());
+        return new RankedUser(longId, githubUser.getRank(), 1);
     } 
     
 }

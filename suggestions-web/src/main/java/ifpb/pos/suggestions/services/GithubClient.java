@@ -13,7 +13,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import ifpb.pos.suggestions.models.GithubRepository;
 import ifpb.pos.suggestions.models.GithubUser;
-import ifpb.pos.suggestions.models.GithubWrapperUser;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -153,22 +152,6 @@ public class GithubClient {
         return null;
     }
     
-    public GithubUser extractRepositories(Response response){
-        String stringResponse = response.readEntity(String.class);
-        
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        
-        GithubWrapperUser user = null;
-        try {
-            user = mapper.readValue(stringResponse, new TypeReference<GithubWrapperUser>() {
-            });
-        } catch (IOException ex) {
-            Logger.getLogger(GithubClient.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        return null;
-    }
     
     public List<String> extractLanguagesRepo(String urlRepoLanguages) {        
         

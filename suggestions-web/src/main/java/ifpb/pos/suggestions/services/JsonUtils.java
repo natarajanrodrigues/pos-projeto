@@ -12,7 +12,7 @@ import com.google.gson.JsonObject;
 
 /**
  *
- * @author natarajan
+ * @author victor hugo / alterações natarajan
  */
 public class JsonUtils {
 

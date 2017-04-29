@@ -7,13 +7,23 @@ package ifpb.pos.suggestions.models;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 
 /**
  *
  * @author natarajan
  */
+@Entity
 public class GithubUser {
  
+    private static final long serialVersionUID = 123L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    
+    private Long id;
     private String login;
     private String followersURL;
     private String organizationsURL;

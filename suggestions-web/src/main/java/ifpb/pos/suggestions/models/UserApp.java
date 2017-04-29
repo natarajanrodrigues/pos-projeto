@@ -28,18 +28,19 @@ public class UserApp implements Serializable {
     private Long id;
     
     private String githubAccount;
-    
     private String linkedinAccount;
     
-    @OneToOne
+    @OneToOne(mappedBy = "user")
     private GithubUser githubUser;
 
     public UserApp() {
+        
     }
 
     public UserApp(String githubAccount, String linkedinAccount) {
         this.githubAccount = githubAccount;
         this.linkedinAccount = linkedinAccount;
+        
     }
 
     public Long getId() {
@@ -66,13 +67,7 @@ public class UserApp implements Serializable {
         this.linkedinAccount = linkedinAccount;
     }
 
-    public GithubUser getGithubUser() {
-        return githubUser;
-    }
-
-    public void setGithubUser(GithubUser githubUser) {
-        this.githubUser = githubUser;
-    }
+    
     
     @Override
     public int hashCode() {
@@ -109,7 +104,8 @@ public class UserApp implements Serializable {
 
     @Override
     public String toString() {
-        return "UserApp{" + "id=" + id + ", githubAccount=" + githubAccount + ", linkedinAccount=" + linkedinAccount + ", githubUser=" + githubUser + '}';
+        return "UserApp{" + "id=" + id + ", githubAccount=" + githubAccount + ", linkedinAccount=" + linkedinAccount + '}';
     }
+    
     
 }

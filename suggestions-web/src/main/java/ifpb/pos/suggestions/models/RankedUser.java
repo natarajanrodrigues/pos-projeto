@@ -9,16 +9,16 @@ package ifpb.pos.suggestions.models;
  *
  * @author natarajan
  */
-public class HankedUser {
+public class RankedUser {
     
     private Long idUser;
     private double ranking;
     private int rankingPosition;
 
-    public HankedUser() {
+    public RankedUser() {
     }
 
-    public HankedUser(Long idUser, double ranking, int rankingPosition) {
+    public RankedUser(Long idUser, double ranking, int rankingPosition) {
         this.idUser = idUser;
         this.ranking = ranking;
         this.rankingPosition = rankingPosition;
