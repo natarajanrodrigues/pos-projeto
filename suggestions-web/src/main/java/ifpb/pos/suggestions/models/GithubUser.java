@@ -11,18 +11,19 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 
 /**
  *
  * @author natarajan
  */
-@Entity
+//@Entity
 public class GithubUser {
  
-    private static final long serialVersionUID = 123L;
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    
+//    private static final long serialVersionUID = 123L;
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    
     private Long id;
     private String login;
     private String followersURL;
@@ -30,8 +31,16 @@ public class GithubUser {
     private String reposURL;
     private double rank;
     private List<GithubRepository> repositories;
+    
+    @OneToOne
+    private UserApp user;
 
     public GithubUser() {
+    }
+
+    public GithubUser(UserApp user) {
+        this.user = user;
+        this.login = user.getGithubAccount();
         this.repositories = new ArrayList();
     }
 

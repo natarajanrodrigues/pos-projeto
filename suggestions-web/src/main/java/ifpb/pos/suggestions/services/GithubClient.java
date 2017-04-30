@@ -13,6 +13,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import ifpb.pos.suggestions.models.GithubRepository;
 import ifpb.pos.suggestions.models.GithubUser;
+import ifpb.pos.suggestions.models.UserApp;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -22,6 +23,7 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -34,11 +36,18 @@ import java.util.logging.Logger;
  */
 public class GithubClient {
 
+    private static String token = "3744c2789ffa71c3ed4d76b4f6d4fe002fe041df";            
     private final Client cliente = ClientBuilder.newClient();
-    private final WebTarget gitApiTarget = cliente.target("https://api.github.com")
-            .queryParam("access_token", "884d4581f490e9832cd001e5dbbe0be6f495197a");
-
+    private final WebTarget gitApiTarget = cliente
+            .target("https://api.github.com")
+            ;
+//            .queryParam("access_token", "3744c2789ffa71c3ed4d76b4f6d4fe002fe041df");
+    
+    private String encodedToken;
+    private String baseAuth;
     public GithubClient() {
+        this.encodedToken = Base64.getEncoder().encodeToString(token.getBytes());
+        this.baseAuth = "Basic " + encodedToken;
     }
      
     public GithubUser getGithubUser (String githubUserLogin){
@@ -49,6 +58,7 @@ public class GithubClient {
                 .path("search/users")
                 .queryParam("q", query)
                 .request()
+                .header("Authorization", baseAuth)
                 .get();
         
 //        return extractUserJson(response, githubUserLogin);// devolve String
@@ -60,7 +70,9 @@ public class GithubClient {
         Response response = gitApiTarget
                 .path("users/{user}/repos")
                 .resolveTemplate("user", githubUserLogin)
-                .request().get();
+                .request()
+                .header("Authorization", baseAuth)
+                .get();
         
         String resultJson = response.readEntity(String.class);
         JsonArray array = JsonUtils.getJsonArrayFromString(resultJson);
@@ -77,7 +89,9 @@ public class GithubClient {
         Response response = gitApiTarget
                 .path("search/repositories")
                 .queryParam("q", query)
-                .request().get();
+                .request()
+                .header("Authorization", baseAuth)
+                .get();
         String resultJson = response.readEntity(String.class);
         JsonArray array = JsonUtils.getJsonElementFromString(resultJson, "items").getAsJsonArray();
         return extractReposWithGSON(array);
@@ -159,7 +173,9 @@ public class GithubClient {
         Client localCliente = ClientBuilder.newClient();
         WebTarget target = localCliente.target(urlRepoLanguages);
         Response response = target
-                .request().get();
+                .request()
+                .header("Authorization", baseAuth)
+                .get();
         String resultResponse = response.readEntity(String.class);
         JsonObject jsonObjectFromString = JsonUtils.getJsonObjectFromString(resultResponse);
 
@@ -175,8 +191,12 @@ public class GithubClient {
         Client localCliente = ClientBuilder.newClient();
         WebTarget target = localCliente.target(url);
         Response response = target
-                .request().get();
-        JsonArray jsonArray = JsonUtils.getJsonArrayFromString(response.readEntity(String.class));
+                .queryParam("access_token", token)
+                .request()
+                .get();
+        String readEntity = response.readEntity(String.class);
+        System.out.println("RESPOSTA::: " + readEntity);
+        JsonArray jsonArray = JsonUtils.getJsonArrayFromString(readEntity);
         return jsonArray.size();
     }
 
@@ -192,7 +212,7 @@ public class GithubClient {
                 .path("search/commits")
                 .queryParam("q", query)
                 .request()
-
+                .header("Authorization", baseAuth)
                 .accept("application/vnd.github.cloak-preview")
                 .get();
         
@@ -209,6 +229,25 @@ public class GithubClient {
 //        int numRepos        = calculateSizeList(githubUser.getReposURL());
         int numRepos        = githubUser.getRepositories().size();
         int numOrgs         = calculateSizeList(githubUser.getOrganizationsURL());
+        
+        System.out.println("contr: "+ numContribution);
+        System.out.println("numFoll: "+ numFollowers);
+        System.out.println("Repos: "+ numRepos);
+        System.out.println("orgs: "+ numOrgs);
+        
+        long soma = numContribution + numFollowers + numRepos + numOrgs;
+        double rankNormal = (double) 1 / ( 1 + soma);
+        
+        return 1 - rankNormal;
+    }
+    
+    public double rank(UserApp userApp) {
+        
+        int numContribution = numCommittesCurrentMonth(userApp.getGithubAccount());
+        int numFollowers    = calculateSizeList(userApp.getFollowersGithubURL());
+//        int numRepos        = calculateSizeList(githubUser.getReposURL());
+        int numRepos        = userApp.getRepositories().size();
+        int numOrgs         = calculateSizeList(userApp.getOrgsGithubURL());
         
         System.out.println("contr: "+ numContribution);
         System.out.println("numFoll: "+ numFollowers);
@@ -245,6 +284,30 @@ public class GithubClient {
         return githubUser;
     }
     
+    public UserApp updateUserInfos(UserApp userApp) {
+        if (validUserApp(userApp)) {
+            List<GithubRepository> newRepos = getAllUserRepos(userApp.getReposGithubURL());
+            
+            //update the repositories
+            Iterator<GithubRepository> iteratorAncienteRepo = userApp.getRepositories().iterator();
+            while (iteratorAncienteRepo.hasNext()) {
+                GithubRepository ancientUserRepo = iteratorAncienteRepo.next();
+                if (!newRepos.contains(ancientUserRepo)) {
+                    userApp.removeRepository(ancientUserRepo);
+                } else {
+                    newRepos.remove(ancientUserRepo);
+                }
+            }
+            newRepos.forEach(r->{
+                userApp.addRepository(r);
+            });
+            
+            //do ranking magic
+            userApp.setRank(rank(userApp));
+        }
+        return userApp;
+    }
+    
     public boolean validGithubUser(GithubUser githubUser){
         if (!isValid(githubUser.getLogin()))
             return false;
@@ -254,7 +317,18 @@ public class GithubClient {
             return false;
         if (!isValid(githubUser.getReposURL()))
             return false;
-        
+        return true;
+    }
+    
+    public boolean validUserApp(UserApp userApp){
+        if (!isValid(userApp.getGithubAccount()))
+            return false;
+        if (!isValid(userApp.getFollowersGithubURL()))
+            return false;
+        if (!isValid(userApp.getOrgsGithubURL()))
+            return false;
+        if (!isValid(userApp.getReposGithubURL()))
+            return false;
         return true;
     }
     

@@ -10,6 +10,7 @@ import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 
 /**
  *
@@ -39,6 +40,28 @@ public class UserRepository {
     
     public List<UserApp> getAll() {
         return em.createNativeQuery("SELECT * FROM UserApp", UserApp.class).getResultList();
+    }
+    
+    public UserApp getByGithubAccount(String gitAccount) {
+        TypedQuery<UserApp> query = em
+                .createQuery("SELECT u FROM UserApp u"
+                + " WHERE u.githubAccount = :account", UserApp.class)
+                .setParameter("account", gitAccount);
+        
+        return query.getSingleResult();        
+    }
+    
+    public UserApp getByLinkedinAccount(String linkedinAccount) {
+        TypedQuery<UserApp> query = em
+                .createQuery("SELECT u FROM UserApp u"
+                + " WHERE u.linkedinactcoun = :account", UserApp.class)
+                .setParameter("account", linkedinAccount);
+        
+        return query.getSingleResult();        
+    }
+    
+    public List<UserApp> getAllOrderByRank() {
+        return em.createQuery("FROM UserApp u ORDER BY u.rank", UserApp.class).getResultList();
     }
     
 }

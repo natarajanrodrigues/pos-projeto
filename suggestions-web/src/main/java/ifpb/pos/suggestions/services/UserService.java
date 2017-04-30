@@ -5,11 +5,14 @@
  */
 package ifpb.pos.suggestions.services;
 
+import ifpb.pos.suggestions.mdb.CadastroProducerQueue;
 import ifpb.pos.suggestions.models.GithubRepository;
 import ifpb.pos.suggestions.models.GithubUser;
 import ifpb.pos.suggestions.models.RankedUser;
 import ifpb.pos.suggestions.models.UserApp;
 import ifpb.pos.suggestions.persistence.UserRepository;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -21,24 +24,36 @@ import javax.ejb.Stateless;
 @Stateless
 public class UserService {
 
+    
     @EJB
     private UserRepository userRepository;
     
-    private GithubClient githubClient;
+    @EJB
+    private CadastroProducerQueue queueProducer;
+    
+    private GithubClient githubClient = new GithubClient();
     
     public UserService() {   
     }
 
     public void createUser(UserApp userApp){
         if (isValid(userApp.getGithubAccount()) && isValid(userApp.getLinkedinAccount())) {
+
             GithubUser githubUser = githubClient.getGithubUser(userApp.getGithubAccount());
-            // IMPLEMENTAR AINDA
-            // de preferência chamar assincronamente
-            // githubClient.updateGithubUserInfos(githubUser);
-            // para atualizar os repositório e pegar o rank
+            if (githubUser != null) {
+                
+                userApp.setFollowersGithubURL(githubUser.getFollowersURL());
+                userApp.setOrgsGithubURL(githubUser.getOrganizationsURL());
+                userApp.setReposGithubURL(githubUser.getReposURL());
+                
+                userRepository.save(userApp);
+                
+                queueProducer.sendMessage(userApp.getGithubAccount());
+            }
         }
-        userRepository.save(userApp);
     }
+    
+    
     
     public boolean isValid(String s){
         return (s != null && !s.trim().equals(""));
@@ -55,8 +70,14 @@ public class UserService {
     }
     
     public List<RankedUser> getAllHank(){
-        //IMPLEMENTAR AINDA
-        return null;
+        List<UserApp> usersOrderedByRank = userRepository.getAllOrderByRank();
+        List<RankedUser> allRanking = new ArrayList<>();
+        
+        for (int i = 1; i <= usersOrderedByRank.size(); i++) {
+            UserApp user = usersOrderedByRank.get(i);
+            allRanking.add(new RankedUser(user.getId(), user.getRank(), i));
+        }
+        return allRanking;
     }
     
     public RankedUser getHankedUser(String userId){
@@ -65,5 +86,41 @@ public class UserService {
         GithubUser githubUser = githubClient.getGithubUser(get.getGithubAccount());
         return new RankedUser(longId, githubUser.getRank(), 1);
     } 
+    
+    public UserApp getUser(String userId) {
+        Long longId = new Long(userId);
+        return userRepository.get(longId);
+    }
+
+    
+    public void atualizarDadosUser(String githubUserLogin) {
+        
+        UserApp userApp = userRepository.getByGithubAccount(githubUserLogin);
+        
+        List<GithubRepository> newRepos = githubClient.getAllUserRepos(githubUserLogin);
+
+        //update the repositories
+        Iterator<GithubRepository> iteratorAncienteRepo = userApp.getRepositories().iterator();
+        while (iteratorAncienteRepo.hasNext()) {
+            GithubRepository ancientUserRepo = iteratorAncienteRepo.next();
+            if (!newRepos.contains(ancientUserRepo)) {
+                userApp.removeRepository(ancientUserRepo);
+            } else {
+                newRepos.remove(ancientUserRepo);
+            }
+        }
+
+        for (GithubRepository r : newRepos) {
+            userApp.addRepository(r);
+        }
+        
+        userApp.setRank(githubClient.rank(userApp));
+
+        userRepository.update(userApp);
+        
+    }
+    
+    
+
     
 }

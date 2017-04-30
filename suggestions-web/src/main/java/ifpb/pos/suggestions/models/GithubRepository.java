@@ -5,19 +5,31 @@
  */
 package ifpb.pos.suggestions.models;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
+import javax.persistence.ElementCollection;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 
 /**
  *
  * @author natarajan
  */
-public class GithubRepository {
+@Entity
+public class GithubRepository implements Serializable{
     
+    private static final long serialVersionUID = 1L;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
     private String language;
     private String languages_url;
+    
+    @ElementCollection
     private List<String> languages;
     
     

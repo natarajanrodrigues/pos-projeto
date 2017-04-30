@@ -5,8 +5,11 @@
  */
 package ifpb.pos.suggestions.web.resources;
 
+import ifpb.pos.suggestions.models.GithubRepository;
 import ifpb.pos.suggestions.models.UserApp;
 import ifpb.pos.suggestions.persistence.UserRepository;
+import ifpb.pos.suggestions.services.UserService;
+import java.util.List;
 import javax.ejb.EJB;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -18,6 +21,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.container.ResourceContext;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -34,12 +38,14 @@ public class UserResources {
     private ResourceContext resourceContext;
     
     @EJB
-    UserRepository userRepository;
+    UserService userService;
     
     @GET
     @Path("{idUser}")
+    @Produces(MediaType.APPLICATION_JSON)
     public Response getUser(@PathParam("idUser") String idUser){
-        return Response.ok().entity("getUser aqui: " + idUser).build();
+        UserApp user = userService.getUser(idUser);
+        return Response.ok().entity(user).build();
     }
     
     @POST
@@ -53,8 +59,11 @@ public class UserResources {
             return Response.noContent().status(Status.BAD_REQUEST).build();
               
         UserApp user = new UserApp(githubAccount, linkedinAccount);
-        userRepository.save(user);
-        return Response.ok().entity(user).build();
+        userService.createUser(user);
+        if (user.getId() != null)
+            return Response.ok().entity(user).build();
+        else 
+            return Response.ok().entity("Erro na criação do Usuário").build();
     }
     
     @PUT
@@ -65,10 +74,11 @@ public class UserResources {
     @GET
     @Path("{idUser}/project")
     public Response getProjects(
-            @PathParam("idUser") String idUser, 
-            @Context UriInfo info) {
-
-        return Response.ok().entity("retornando: " + idUser).build();
+            @PathParam("idUser") String idUser) {
+        
+        List<GithubRepository> repos = userService.getAllRepositorys(idUser);
+        GenericEntity<List<GithubRepository>> entity = new GenericEntity<List<GithubRepository>>(repos) {};
+        return Response.ok().entity(entity).build();
     }
     
     @GET
@@ -78,8 +88,10 @@ public class UserResources {
             @PathParam("idUser") String idUser, 
             @PathParam("language") String language, 
             @Context UriInfo info) {
-
-        return Response.ok().entity("retornando projetos de  " + idUser + " com a linguagem: " + language).build();
+        
+        List<GithubRepository> repos = userService.getAllRepositorysByLanguage(idUser, language);
+        GenericEntity<List<GithubRepository>> entity = new GenericEntity<List<GithubRepository>>(repos) {};
+        return Response.ok().entity(entity).build();
     }
     
     @GET

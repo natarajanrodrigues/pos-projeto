@@ -5,20 +5,25 @@
  */
 package ifpb.pos.suggestions.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.OneToOne;
+import javax.persistence.OneToMany;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
  *
  * @author natarajan
  */
-@XmlRootElement
+//@XmlRootElement
 @Entity
 public class UserApp implements Serializable {
 
@@ -27,20 +32,34 @@ public class UserApp implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    @Column(unique = true)
     private String githubAccount;
+    
+    @Column(unique = true)
     private String linkedinAccount;
     
-    @OneToOne(mappedBy = "user")
-    private GithubUser githubUser;
-
+    @JsonIgnore(true)
+    private String followersGithubURL;
+    
+    @JsonIgnore(true)
+    private String orgsGithubURL;
+    
+    @JsonIgnore(true)
+    private String reposGithubURL;
+    
+    private double rank;
+    
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    private List<GithubRepository> repositories;
+    
     public UserApp() {
-        
+        this.repositories = new ArrayList<>();
     }
 
     public UserApp(String githubAccount, String linkedinAccount) {
         this.githubAccount = githubAccount;
         this.linkedinAccount = linkedinAccount;
-        
+        this.repositories = new ArrayList<>();
     }
 
     public Long getId() {
@@ -67,14 +86,58 @@ public class UserApp implements Serializable {
         this.linkedinAccount = linkedinAccount;
     }
 
+    public String getFollowersGithubURL() {
+        return followersGithubURL;
+    }
+
+    public void setFollowersGithubURL(String followersGithubURL) {
+        this.followersGithubURL = followersGithubURL;
+    }
+
+    public String getOrgsGithubURL() {
+        return orgsGithubURL;
+    }
+
+    public void setOrgsGithubURL(String orgsGithubURL) {
+        this.orgsGithubURL = orgsGithubURL;
+    }
+
+    public String getReposGithubURL() {
+        return reposGithubURL;
+    }
+
+    public void setReposGithubURL(String reposGithubURL) {
+        this.reposGithubURL = reposGithubURL;
+    }
+
+    public double getRank() {
+        return rank;
+    }
+
+    public void setRank(double rank) {
+        this.rank = rank;
+    }
+
+    public List<GithubRepository> getRepositories() {
+        return repositories;
+    }
+
+    public void setRepositories(List<GithubRepository> repositories) {
+        this.repositories = repositories;
+    }
     
-    
+    public void addRepository(GithubRepository githubRepository) {
+        this.repositories.add(githubRepository);
+    }
+        
+    public void removeRepository(GithubRepository githubRepository) {
+        this.repositories.remove(githubRepository);
+    }
+
     @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 29 * hash + Objects.hashCode(this.id);
-        hash = 29 * hash + Objects.hashCode(this.githubAccount);
-        hash = 29 * hash + Objects.hashCode(this.linkedinAccount);
+        int hash = 7;
+        hash = 53 * hash + Objects.hashCode(this.id);
         return hash;
     }
 
@@ -90,12 +153,6 @@ public class UserApp implements Serializable {
             return false;
         }
         final UserApp other = (UserApp) obj;
-        if (!Objects.equals(this.githubAccount, other.githubAccount)) {
-            return false;
-        }
-        if (!Objects.equals(this.linkedinAccount, other.linkedinAccount)) {
-            return false;
-        }
         if (!Objects.equals(this.id, other.id)) {
             return false;
         }
@@ -104,8 +161,8 @@ public class UserApp implements Serializable {
 
     @Override
     public String toString() {
-        return "UserApp{" + "id=" + id + ", githubAccount=" + githubAccount + ", linkedinAccount=" + linkedinAccount + '}';
+        return "UserApp{" + "id=" + id + ", githubAccount=" + githubAccount + ", linkedinAccount=" + linkedinAccount + ", followersGithubURL=" + followersGithubURL + ", orgsGithubURL=" + orgsGithubURL + ", reposGithubURL=" + reposGithubURL + ", rank=" + rank + ", repositories=" + repositories + '}';
     }
-    
+
     
 }
