@@ -5,16 +5,12 @@
  */
 package ifpb.pos.suggestions.services;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import ifpb.pos.suggestions.models.GithubRepository;
 import ifpb.pos.suggestions.models.GithubUser;
 import ifpb.pos.suggestions.models.UserApp;
-import java.io.IOException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -27,8 +23,6 @@ import java.util.Base64;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -39,12 +33,12 @@ public class GithubClient {
     private static String token = "3744c2789ffa71c3ed4d76b4f6d4fe002fe041df";            
     private final Client cliente = ClientBuilder.newClient();
     private final WebTarget gitApiTarget = cliente
-            .target("https://api.github.com")
-            ;
-//            .queryParam("access_token", "3744c2789ffa71c3ed4d76b4f6d4fe002fe041df");
+            .target("https://api.github.com");
+//            .queryParam("access_token", "3744c2789ffa71c3ed4d76b4f6d4fe002fe041df"); //outra forma
     
     private String encodedToken;
     private String baseAuth;
+    
     public GithubClient() {
         this.encodedToken = Base64.getEncoder().encodeToString(token.getBytes());
         this.baseAuth = "Basic " + encodedToken;
@@ -61,8 +55,6 @@ public class GithubClient {
                 .header("Authorization", baseAuth)
                 .get();
         
-//        return extractUserJson(response, githubUserLogin);// devolve String
-        
         return extractUserValues(response, githubUserLogin);
     }
 
@@ -76,14 +68,13 @@ public class GithubClient {
         
         String resultJson = response.readEntity(String.class);
         JsonArray array = JsonUtils.getJsonArrayFromString(resultJson);
-//        JsonArray array = response.readEntity(JsonArray.class);
+
         return extractReposWithGSON(array);        
     }
     
     public List<GithubRepository> getAllUserReposByLanguage(String githubUserLogin, String language) {        
          
-//        String query = String.format("user:%s language:%s&topic:%s", githubUser, language, language);
-        
+        //String query = String.format("user:%s language:%s&topic:%s", githubUser, language, language);        
         String query = String.format("user:%s language:%s", githubUserLogin, language);
         
         Response response = gitApiTarget
@@ -100,7 +91,6 @@ public class GithubClient {
     public List<GithubRepository> extractReposWithGSON(JsonArray jsonArray){
         List<GithubRepository> result = new ArrayList<>();
         
-//        JsonArray jsonArray = JsonUtils.getJsonArrayFromString(stringJsonArray);
         Iterator<JsonElement> iterator = jsonArray.iterator();
         while (iterator.hasNext()) {
             
@@ -145,9 +135,6 @@ public class GithubClient {
                 return userJsonObject.toString();
             }
         }
-        
-//        JsonObject userJsonObject = array.get(0).getAsJsonObject();        
-//        return userJsonObject.toString();
         return null;
     }
     
@@ -195,7 +182,7 @@ public class GithubClient {
                 .request()
                 .get();
         String readEntity = response.readEntity(String.class);
-        System.out.println("RESPOSTA::: " + readEntity);
+        
         JsonArray jsonArray = JsonUtils.getJsonArrayFromString(readEntity);
         return jsonArray.size();
     }
@@ -222,18 +209,16 @@ public class GithubClient {
         
     }
 
-    private double rank(GithubUser githubUser) {
-        
-        int numContribution = numCommittesCurrentMonth(githubUser.getLogin());
-        int numFollowers    = calculateSizeList(githubUser.getFollowersURL());
-//        int numRepos        = calculateSizeList(githubUser.getReposURL());
-        int numRepos        = githubUser.getRepositories().size();
-        int numOrgs         = calculateSizeList(githubUser.getOrganizationsURL());
-        
-        System.out.println("contr: "+ numContribution);
-        System.out.println("numFoll: "+ numFollowers);
-        System.out.println("Repos: "+ numRepos);
-        System.out.println("orgs: "+ numOrgs);
+
+    private double rankByValues(
+            String githubLong,
+            String followersUrl, 
+            String orgsUrl, 
+            int reposSize) {
+        int numContribution = numCommittesCurrentMonth(githubLong);
+        int numFollowers    = calculateSizeList(followersUrl);
+        int numOrgs         = calculateSizeList(orgsUrl);
+        int numRepos        = reposSize;
         
         long soma = numContribution + numFollowers + numRepos + numOrgs;
         double rankNormal = (double) 1 / ( 1 + soma);
@@ -241,100 +226,18 @@ public class GithubClient {
         return 1 - rankNormal;
     }
     
-    public double rank(UserApp userApp) {
+    private double rankFromGithubUser(GithubUser githubUser) {
         
-        int numContribution = numCommittesCurrentMonth(userApp.getGithubAccount());
-        int numFollowers    = calculateSizeList(userApp.getFollowersGithubURL());
-//        int numRepos        = calculateSizeList(githubUser.getReposURL());
-        int numRepos        = userApp.getRepositories().size();
-        int numOrgs         = calculateSizeList(userApp.getOrgsGithubURL());
+        return rankByValues(
+                githubUser.getLogin(), githubUser.getFollowersURL(), 
+                githubUser.getOrganizationsURL(), githubUser.getRepositories().size());
+    }
+    
+    public double rankFromUserapp(UserApp userApp) {
         
-        System.out.println("contr: "+ numContribution);
-        System.out.println("numFoll: "+ numFollowers);
-        System.out.println("Repos: "+ numRepos);
-        System.out.println("orgs: "+ numOrgs);
-        
-        long soma = numContribution + numFollowers + numRepos + numOrgs;
-        double rankNormal = (double) 1 / ( 1 + soma);
-        
-        return 1 - rankNormal;
-    }
-    
-    public GithubUser updateGithubUserInfos(GithubUser githubUser) {
-        if (validGithubUser(githubUser)) {
-            List<GithubRepository> newRepos = getAllUserRepos(githubUser.getLogin());
-            
-            //update the repositories
-            Iterator<GithubRepository> iteratorAncienteRepo = githubUser.getRepositories().iterator();
-            while (iteratorAncienteRepo.hasNext()) {
-                GithubRepository ancientUserRepo = iteratorAncienteRepo.next();
-                if (!newRepos.contains(ancientUserRepo)) {
-                    githubUser.removeRepository(ancientUserRepo);
-                } else {
-                    newRepos.remove(ancientUserRepo);
-                }
-            }
-            newRepos.forEach(r->{
-                githubUser.addRepository(r);
-            });
-            
-            //do ranking magic
-            githubUser.setRank(rank(githubUser));
-        }
-        return githubUser;
-    }
-    
-    public UserApp updateUserInfos(UserApp userApp) {
-        if (validUserApp(userApp)) {
-            List<GithubRepository> newRepos = getAllUserRepos(userApp.getReposGithubURL());
-            
-            //update the repositories
-            Iterator<GithubRepository> iteratorAncienteRepo = userApp.getRepositories().iterator();
-            while (iteratorAncienteRepo.hasNext()) {
-                GithubRepository ancientUserRepo = iteratorAncienteRepo.next();
-                if (!newRepos.contains(ancientUserRepo)) {
-                    userApp.removeRepository(ancientUserRepo);
-                } else {
-                    newRepos.remove(ancientUserRepo);
-                }
-            }
-            newRepos.forEach(r->{
-                userApp.addRepository(r);
-            });
-            
-            //do ranking magic
-            userApp.setRank(rank(userApp));
-        }
-        return userApp;
-    }
-    
-    public boolean validGithubUser(GithubUser githubUser){
-        if (!isValid(githubUser.getLogin()))
-            return false;
-        if (!isValid(githubUser.getFollowersURL()))
-            return false;
-        if (!isValid(githubUser.getOrganizationsURL()))
-            return false;
-        if (!isValid(githubUser.getReposURL()))
-            return false;
-        return true;
-    }
-    
-    public boolean validUserApp(UserApp userApp){
-        if (!isValid(userApp.getGithubAccount()))
-            return false;
-        if (!isValid(userApp.getFollowersGithubURL()))
-            return false;
-        if (!isValid(userApp.getOrgsGithubURL()))
-            return false;
-        if (!isValid(userApp.getReposGithubURL()))
-            return false;
-        return true;
-    }
-    
-    
-    public boolean isValid(String s){
-        return (s != null && !s.trim().equals(""));
+        return rankByValues(
+                userApp.getGithubAccount(), userApp.getFollowersGithubURL(), 
+                userApp.getOrgsGithubURL(), userApp.getRepositories().size());
     }
 
 }

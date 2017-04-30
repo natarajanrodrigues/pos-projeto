@@ -138,7 +138,7 @@ public class UserService {
                 userApp.addRepository(r);
             }
 
-            userApp.setRank(githubClient.rank(userApp));
+            userApp.setRank(githubClient.rankFromUserapp(userApp));
 
             userRepository.update(userApp);
         }
