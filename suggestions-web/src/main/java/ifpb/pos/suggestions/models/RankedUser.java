@@ -5,12 +5,17 @@
  */
 package ifpb.pos.suggestions.models;
 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+
 /**
  *
  * @author natarajan
  */
+@Entity
 public class RankedUser {
-    
+    @Id
     private Long idUser;
     private double ranking;
     private int rankingPosition;

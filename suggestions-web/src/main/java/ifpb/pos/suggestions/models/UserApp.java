@@ -16,6 +16,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -49,7 +50,8 @@ public class UserApp implements Serializable {
     
     private double rank;
     
-    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
+    @JoinColumn(name = "userapp_id")
     private List<GithubRepository> repositories;
     
     public UserApp() {

@@ -5,11 +5,13 @@
  */
 package ifpb.pos.suggestions.persistence;
 
+import ifpb.pos.suggestions.models.RankedUser;
 import ifpb.pos.suggestions.models.UserApp;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
 /**
@@ -61,7 +63,26 @@ public class UserRepository {
     }
     
     public List<UserApp> getAllOrderByRank() {
-        return em.createQuery("FROM UserApp u ORDER BY u.rank", UserApp.class).getResultList();
+        return em.createQuery("FROM UserApp u ORDER BY u.rank DESC", UserApp.class).getResultList();
+    }
+    
+    
+    public List<RankedUser> getTotalRank() {
+        Query query = em.createNativeQuery("SELECT ROW_NUMBER() OVER(ORDER BY rank desc) as "
+                + "rankingposition, id as iduser, rank as ranking FROM userapp;", RankedUser.class);
+        
+        return query.getResultList();        
+
+    }
+    
+    public RankedUser getOneRank(Long anId) {
+        
+        Query query = em.createNativeQuery("SELECT ROW_NUMBER() OVER(ORDER BY rank desc) as "
+                + "rankingposition, id as iduser, rank as ranking FROM userapp WHERE id = ?1", RankedUser.class)
+                .setParameter(1, anId);
+        
+        return (RankedUser) query.getSingleResult();        
+
     }
     
 }

@@ -42,7 +42,7 @@ public class RankResources {
     @Path("{idUser}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUsersRank(@PathParam("idUser") String idUser){
-        RankedUser hankedUser = userService.getHankedUser(idUser);
+        RankedUser hankedUser = userService.getHankedUserBetter(idUser);
         return Response.ok().entity(hankedUser).build();
     }
     

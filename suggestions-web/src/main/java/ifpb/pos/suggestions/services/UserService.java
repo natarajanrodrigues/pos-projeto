@@ -61,30 +61,52 @@ public class UserService {
     
     public List<GithubRepository> getAllRepositorys(String idUser) {
         UserApp user = userRepository.get(new Long(idUser));
-        return githubClient.getAllUserRepos(user.getGithubAccount());
+//        return githubClient.getAllUserRepos(user.getGithubAccount());
+
+        if (user != null) {
+            return user.getRepositories();
+        }
+        return null;
     }
     
     public List<GithubRepository> getAllRepositorysByLanguage(String idUser, String language) {
         UserApp user = userRepository.get(new Long(idUser));
-        return githubClient.getAllUserReposByLanguage(user.getGithubAccount(), language);
+        //        return githubClient.getAllUserReposByLanguage(user.getGithubAccount(), language);
+        List<GithubRepository> selectedRepos = new ArrayList<>();
+        for (GithubRepository r : user.getRepositories()) {
+            if (r.getLanguages().contains(language))
+                selectedRepos.add(r);
+        }
+        return selectedRepos;
     }
     
     public List<RankedUser> getAllHank(){
-        List<UserApp> usersOrderedByRank = userRepository.getAllOrderByRank();
-        List<RankedUser> allRanking = new ArrayList<>();
-        
-        for (int i = 1; i <= usersOrderedByRank.size(); i++) {
-            UserApp user = usersOrderedByRank.get(i);
-            allRanking.add(new RankedUser(user.getId(), user.getRank(), i));
-        }
-        return allRanking;
+//        List<UserApp> usersOrderedByRank = userRepository.getAllOrderByRank();
+//        
+//        List<RankedUser> allRanking = new ArrayList<>();
+//        
+//        for (int i = 0; i < usersOrderedByRank.size(); i++) {
+//            UserApp user = usersOrderedByRank.get(i);
+//            allRanking.add(new RankedUser(user.getId(), user.getRank(), i + 1));
+//        }
+//        return allRanking;
+
+        return userRepository.getTotalRank();
     }
     
     public RankedUser getHankedUser(String userId){
+        
+        ///MUDAR AQUI!!!! 
+        
         Long longId = new Long(userId);
         UserApp get = userRepository.get(longId);
         GithubUser githubUser = githubClient.getGithubUser(get.getGithubAccount());
         return new RankedUser(longId, githubUser.getRank(), 1);
+    } 
+    
+    public RankedUser getHankedUserBetter(String userId){
+        
+        return userRepository.getOneRank(new Long(userId));
     } 
     
     public UserApp getUser(String userId) {
