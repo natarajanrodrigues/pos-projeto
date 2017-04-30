@@ -5,7 +5,7 @@
  */
 package ifpb.pos.suggestions.models;
 
-import javax.persistence.Column;
+import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -14,7 +14,9 @@ import javax.persistence.Id;
  * @author natarajan
  */
 @Entity
-public class RankedUser {
+public class RankedUser implements Serializable{
+    private static final long serialVersionUID = 1989L;
+    
     @Id
     private Long idUser;
     private double ranking;

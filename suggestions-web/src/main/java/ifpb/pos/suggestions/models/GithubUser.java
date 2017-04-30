@@ -23,7 +23,7 @@ public class GithubUser {
 //    private static final long serialVersionUID = 123L;
 //    @Id
 //    @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    
+    
     private Long id;
     private String login;
     private String followersURL;

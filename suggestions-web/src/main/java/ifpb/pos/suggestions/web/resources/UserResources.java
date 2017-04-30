@@ -7,8 +7,8 @@ package ifpb.pos.suggestions.web.resources;
 
 import ifpb.pos.suggestions.models.GithubRepository;
 import ifpb.pos.suggestions.models.UserApp;
-import ifpb.pos.suggestions.persistence.UserRepository;
 import ifpb.pos.suggestions.services.UserService;
+import java.net.URI;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.ws.rs.Consumes;
@@ -52,7 +52,8 @@ public class UserResources {
     @Produces(MediaType.APPLICATION_JSON)
     public Response createUser(
             @QueryParam("github_account") String githubAccount, 
-            @QueryParam("linkedin_account") String linkedinAccount){
+            @QueryParam("linkedin_account") String linkedinAccount,
+            @Context UriInfo uriInfo){
                 
         if (githubAccount == null || githubAccount.trim().equals("") 
                 || linkedinAccount == null || linkedinAccount.trim().equals("") )
@@ -60,10 +61,16 @@ public class UserResources {
               
         UserApp user = new UserApp(githubAccount, linkedinAccount);
         userService.createUser(user);
-        if (user.getId() != null)
-            return Response.ok().entity(user).build();
-        else 
+        if (user.getId() != null) {
+            URI uriUser = uriInfo.getBaseUriBuilder()
+                .path(UserResources.class) 
+                .path(user.getId().toString())
+                .build();
+            return Response.created(uriUser).entity(user).build();
+        } else {
             return Response.ok().entity("Erro na criação do Usuário").build();
+        }
+            
     }
     
     @PUT
@@ -76,9 +83,14 @@ public class UserResources {
     public Response getProjects(
             @PathParam("idUser") String idUser) {
         
-        List<GithubRepository> repos = userService.getAllRepositorys(idUser);
-        GenericEntity<List<GithubRepository>> entity = new GenericEntity<List<GithubRepository>>(repos) {};
-        return Response.ok().entity(entity).build();
+        UserApp user = userService.getUser(idUser);
+        if (user != null) {
+            List<GithubRepository> repos = userService.getAllRepositorys(user);
+            GenericEntity<List<GithubRepository>> entity = new GenericEntity<List<GithubRepository>>(repos) {};
+            return Response.ok().entity(entity).build();
+        } else {
+            return Response.status(Status.NO_CONTENT).build();
+        }
     }
     
     @GET
@@ -89,9 +101,16 @@ public class UserResources {
             @PathParam("language") String language, 
             @Context UriInfo info) {
         
-        List<GithubRepository> repos = userService.getAllRepositorysByLanguage(idUser, language);
-        GenericEntity<List<GithubRepository>> entity = new GenericEntity<List<GithubRepository>>(repos) {};
-        return Response.ok().entity(entity).build();
+        UserApp user = userService.getUser(idUser);
+        if (user != null) {
+            List<GithubRepository> repos = userService.getAllRepositorysByLanguage(user, language);
+            GenericEntity<List<GithubRepository>> entity = new GenericEntity<List<GithubRepository>>(repos) {};
+            return Response.ok().entity(entity).build();
+        } else {
+            return Response.status(Status.NO_CONTENT).build();
+        }
+        
+        
     }
     
     @GET

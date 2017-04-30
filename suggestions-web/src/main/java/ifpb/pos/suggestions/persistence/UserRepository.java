@@ -10,6 +10,7 @@ import ifpb.pos.suggestions.models.UserApp;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
@@ -45,12 +46,20 @@ public class UserRepository {
     }
     
     public UserApp getByGithubAccount(String gitAccount) {
-        TypedQuery<UserApp> query = em
+        try {
+            
+            TypedQuery<UserApp> query = em
                 .createQuery("SELECT u FROM UserApp u"
                 + " WHERE u.githubAccount = :account", UserApp.class)
                 .setParameter("account", gitAccount);
         
-        return query.getSingleResult();        
+            return query.getSingleResult();        
+        
+        } catch(NoResultException e) {
+            System.out.println("Não conseguiu pegar o usuário");
+            return null;
+        }
+        
     }
     
     public UserApp getByLinkedinAccount(String linkedinAccount) {
@@ -66,20 +75,20 @@ public class UserRepository {
         return em.createQuery("FROM UserApp u ORDER BY u.rank DESC", UserApp.class).getResultList();
     }
     
+    //        return em.createNamedQuery("Rank.getAll").getResultList();
     
     public List<RankedUser> getTotalRank() {
         Query query = em.createNativeQuery("SELECT ROW_NUMBER() OVER(ORDER BY rank desc) as "
                 + "rankingposition, id as iduser, rank as ranking FROM userapp;", RankedUser.class);
         
-        return query.getResultList();        
-
+        return query.getResultList();
     }
     
-    public RankedUser getOneRank(Long anId) {
+    public RankedUser getOneRank(Long userId) {
         
         Query query = em.createNativeQuery("SELECT ROW_NUMBER() OVER(ORDER BY rank desc) as "
                 + "rankingposition, id as iduser, rank as ranking FROM userapp WHERE id = ?1", RankedUser.class)
-                .setParameter(1, anId);
+                .setParameter(1, userId);
         
         return (RankedUser) query.getSingleResult();        
 

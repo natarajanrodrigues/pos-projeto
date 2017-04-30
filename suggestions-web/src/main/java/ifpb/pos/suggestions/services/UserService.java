@@ -59,19 +59,20 @@ public class UserService {
         return (s != null && !s.trim().equals(""));
     }
     
-    public List<GithubRepository> getAllRepositorys(String idUser) {
-        UserApp user = userRepository.get(new Long(idUser));
+    public List<GithubRepository> getAllRepositorys(UserApp user) {
+//        UserApp user = userRepository.get(new Long(idUser));
 //        return githubClient.getAllUserRepos(user.getGithubAccount());
-
+        
+        //aqui pode alterar para ir buscar atualizar os repositórios, ou ir buscá-los novamente.
         if (user != null) {
             return user.getRepositories();
         }
         return null;
     }
     
-    public List<GithubRepository> getAllRepositorysByLanguage(String idUser, String language) {
-        UserApp user = userRepository.get(new Long(idUser));
-        //        return githubClient.getAllUserReposByLanguage(user.getGithubAccount(), language);
+    public List<GithubRepository> getAllRepositorysByLanguage(UserApp user, String language) {
+        //UserApp user = userRepository.get(new Long(idUser));
+        //return githubClient.getAllUserReposByLanguage(user.getGithubAccount(), language);
         List<GithubRepository> selectedRepos = new ArrayList<>();
         for (GithubRepository r : user.getRepositories()) {
             if (r.getLanguages().contains(language))
@@ -118,27 +119,30 @@ public class UserService {
     public void atualizarDadosUser(String githubUserLogin) {
         
         UserApp userApp = userRepository.getByGithubAccount(githubUserLogin);
-        
-        List<GithubRepository> newRepos = githubClient.getAllUserRepos(githubUserLogin);
 
-        //update the repositories
-        Iterator<GithubRepository> iteratorAncienteRepo = userApp.getRepositories().iterator();
-        while (iteratorAncienteRepo.hasNext()) {
-            GithubRepository ancientUserRepo = iteratorAncienteRepo.next();
-            if (!newRepos.contains(ancientUserRepo)) {
-                userApp.removeRepository(ancientUserRepo);
-            } else {
-                newRepos.remove(ancientUserRepo);
+        if (userApp != null) {
+            List<GithubRepository> newRepos = githubClient.getAllUserRepos(githubUserLogin);
+
+            //update the repositories
+            Iterator<GithubRepository> iteratorAncienteRepo = userApp.getRepositories().iterator();
+            while (iteratorAncienteRepo.hasNext()) {
+                GithubRepository ancientUserRepo = iteratorAncienteRepo.next();
+                if (!newRepos.contains(ancientUserRepo)) {
+                    userApp.removeRepository(ancientUserRepo);
+                } else {
+                    newRepos.remove(ancientUserRepo);
+                }
             }
-        }
 
-        for (GithubRepository r : newRepos) {
-            userApp.addRepository(r);
+            for (GithubRepository r : newRepos) {
+                userApp.addRepository(r);
+            }
+
+            userApp.setRank(githubClient.rank(userApp));
+
+            userRepository.update(userApp);
         }
         
-        userApp.setRank(githubClient.rank(userApp));
-
-        userRepository.update(userApp);
         
     }
     
