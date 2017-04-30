@@ -102,7 +102,7 @@ public class UserService {
         Long longId = new Long(userId);
         UserApp get = userRepository.get(longId);
         GithubUser githubUser = githubClient.getGithubUser(get.getGithubAccount());
-        return new RankedUser(longId, githubUser.getRank(), 1);
+        return new RankedUser(longId, githubUser.getRank(), 1L);
     } 
     
     public RankedUser getHankedUserBetter(String userId){

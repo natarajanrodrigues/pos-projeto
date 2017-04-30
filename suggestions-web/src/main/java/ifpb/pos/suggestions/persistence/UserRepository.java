@@ -7,6 +7,7 @@ package ifpb.pos.suggestions.persistence;
 
 import ifpb.pos.suggestions.models.RankedUser;
 import ifpb.pos.suggestions.models.UserApp;
+import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
@@ -78,20 +79,61 @@ public class UserRepository {
     //        return em.createNamedQuery("Rank.getAll").getResultList();
     
     public List<RankedUser> getTotalRank() {
-        Query query = em.createNativeQuery("SELECT ROW_NUMBER() OVER(ORDER BY rank desc) as "
-                + "rankingposition, id as iduser, rank as ranking FROM userapp;", RankedUser.class);
         
-        return query.getResultList();
+        //        return em.createNamedQuery("Ranking.all").getResultList();
+//        return em.createQuery("FROM ranking r").getResultList();
+//        
+//        Query query = em
+//                .createNativeQuery("SELECT * FROM Ranking");
+//        return query.getResultList();
+        
+//        Query query = em.createNativeQuery("SELECT ROW_NUMBER() OVER(ORDER BY rank desc) as "
+//                + "rankingposition, id as iduser, rank as ranking FROM userapp;", RankedUser.class);
+//        return query.getResultList();
+
+        Query query = em
+                .createNativeQuery("SELECT * FROM Ranking");
+        List<Object[]> singleResult = (List<Object[]>) query.getResultList();
+        
+        if (singleResult == null) {
+            return null;
+        } else {
+            List<RankedUser> list = new ArrayList();
+            singleResult.forEach((t) -> {
+                list.add(extractRakedUser(t));
+            });
+            return list;
+        }
+
     }
     
     public RankedUser getOneRank(Long userId) {
         
-        Query query = em.createNativeQuery("SELECT ROW_NUMBER() OVER(ORDER BY rank desc) as "
-                + "rankingposition, id as iduser, rank as ranking FROM userapp WHERE id = ?1", RankedUser.class)
-                .setParameter(1, userId);
-        
-        return (RankedUser) query.getSingleResult();        
+//        Query query = em.createNativeQuery("SELECT ROW_NUMBER() OVER(ORDER BY rank desc) as "
+//                + "rankingposition, id as iduser, rank as ranking FROM userapp WHERE id = ?1", RankedUser.class)
+//                .setParameter(1, userId);
+//        return (RankedUser) query.getSingleResult();        
 
+//        int i = userId.intValue();
+        Query query = em
+                .createNativeQuery("SELECT * FROM Ranking where iduser = ?1")
+                 .setParameter(1, userId);
+        Object[] singleResult = (Object[]) query.getSingleResult();
+        
+        if (singleResult == null) {
+            return null;
+        } else {
+            return extractRakedUser(singleResult);
+        }
+        
     }
     
+    private RankedUser extractRakedUser(Object[] array) {
+        Long rankingposition = (Long) array[0];
+        int iduser = new Integer((Integer) array[1]).intValue();
+        double ranking = new Double((Double) array[2]).doubleValue();
+
+        return new RankedUser(new Long(iduser), ranking, rankingposition);
+    }
+
 }
