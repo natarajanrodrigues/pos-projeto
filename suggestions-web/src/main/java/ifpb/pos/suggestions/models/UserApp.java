@@ -5,7 +5,8 @@
  */
 package ifpb.pos.suggestions.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.codehaus.jackson.annotate.JsonIgnore;
+//import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,13 +40,13 @@ public class UserApp implements Serializable {
     @Column(unique = true)
     private String linkedinAccount;
     
-    @JsonIgnore(true)
+    @JsonIgnore
     private String followersGithubURL;
     
-    @JsonIgnore(true)
+    @JsonIgnore
     private String orgsGithubURL;
     
-    @JsonIgnore(true)
+    @JsonIgnore
     private String reposGithubURL;
     
     private double rank;

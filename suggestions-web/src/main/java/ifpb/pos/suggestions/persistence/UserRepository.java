@@ -76,8 +76,6 @@ public class UserRepository {
         return em.createQuery("FROM UserApp u ORDER BY u.rank DESC", UserApp.class).getResultList();
     }
     
-    //        return em.createNamedQuery("Rank.getAll").getResultList();
-    
     public List<RankedUser> getTotalRank() {
         
         //        return em.createNamedQuery("Ranking.all").getResultList();

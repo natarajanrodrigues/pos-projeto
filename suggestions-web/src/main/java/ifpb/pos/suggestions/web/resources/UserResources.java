@@ -5,12 +5,15 @@
  */
 package ifpb.pos.suggestions.web.resources;
 
+import ifpb.pos.suggestions.models.ErrorMessage;
 import ifpb.pos.suggestions.models.GithubRepository;
+import ifpb.pos.suggestions.models.SimpleUser;
 import ifpb.pos.suggestions.models.UserApp;
 import ifpb.pos.suggestions.services.UserService;
 import java.net.URI;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -45,37 +48,58 @@ public class UserResources {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUser(@PathParam("idUser") String idUser){
         UserApp user = userService.getUser(idUser);
-        return Response.ok().entity(user).build();
+        if (user != null) {
+            return Response.ok().entity(new SimpleUser(user)).build();
+        } else {
+            return Response.status(Status.NO_CONTENT).build();
+        }    
     }
     
     @POST
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response createUser(
-            @QueryParam("github_account") String githubAccount, 
-            @QueryParam("linkedin_account") String linkedinAccount,
-            @Context UriInfo uriInfo){
-                
-        if (githubAccount == null || githubAccount.trim().equals("") 
-                || linkedinAccount == null || linkedinAccount.trim().equals("") )
-            return Response.noContent().status(Status.BAD_REQUEST).build();
-              
+    public Response createUser(SimpleUser simpleUser, @Context UriInfo uriInfo){
+            
+        System.out.println(simpleUser);
+        String githubAccount = simpleUser.getGithubAccount();
+        String linkedinAccount = simpleUser.getLinkedinAccount();
+
         UserApp user = new UserApp(githubAccount, linkedinAccount);
-        userService.createUser(user);
-        if (user.getId() != null) {
+        
+        try {
+            userService.createUser(user);
+            simpleUser.setId(user.getId());
             URI uriUser = uriInfo.getBaseUriBuilder()
                 .path(UserResources.class) 
                 .path(user.getId().toString())
                 .build();
-            return Response.created(uriUser).entity(user).build();
-        } else {
-            return Response.ok().entity("Erro na criação do Usuário").build();
+            return Response.created(uriUser).entity(simpleUser).build();
+            
+        } catch(EJBException e) {
+            ErrorMessage errorMessage = new ErrorMessage(e.getMessage());
+            return Response.status(Status.BAD_REQUEST).entity(errorMessage).build();
         }
             
     }
     
     @PUT
-    public Response updateUser(){
-        return Response.ok().entity("update user").build();
+    @Path("{id}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response updateUser(@PathParam("id") Long id, SimpleUser simpleUser){
+
+        try {
+            UserApp updateUser = userService.updateUser(id, simpleUser);
+            if (updateUser != null) {
+                return Response.ok().entity(simpleUser).build();
+            } else {
+                return Response.status(Status.NO_CONTENT).build();
+            }
+            
+        } catch(EJBException e) {
+            ErrorMessage errorMessage = new ErrorMessage(e.getMessage());
+            return Response.status(Status.BAD_REQUEST).entity(errorMessage).build();
+        }
+        
     }
     
     @GET

@@ -9,12 +9,14 @@ import ifpb.pos.suggestions.mdb.CadastroProducerQueue;
 import ifpb.pos.suggestions.models.GithubRepository;
 import ifpb.pos.suggestions.models.GithubUser;
 import ifpb.pos.suggestions.models.RankedUser;
+import ifpb.pos.suggestions.models.SimpleUser;
 import ifpb.pos.suggestions.models.UserApp;
 import ifpb.pos.suggestions.persistence.UserRepository;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 
 /**
@@ -37,22 +39,71 @@ public class UserService {
     }
 
     public void createUser(UserApp userApp){
-        if (isValid(userApp.getGithubAccount()) && isValid(userApp.getLinkedinAccount())) {
-
+//        if (isValid(userApp.getGithubAccount()) && isValid(userApp.getLinkedinAccount())) {
+//
+//            GithubUser githubUser = githubClient.getGithubUser(userApp.getGithubAccount());
+//            if (githubUser != null) {
+//                
+//                userApp.setFollowersGithubURL(githubUser.getFollowersURL());
+//                userApp.setOrgsGithubURL(githubUser.getOrganizationsURL());
+//                userApp.setReposGithubURL(githubUser.getReposURL());
+//                
+//                userRepository.save(userApp);
+//                
+//                queueProducer.sendMessage(userApp.getGithubAccount());
+//            } else {
+//                throw new EJBException("Dados inválidos. Verifique se o parâmetros estão corretos.");
+//            }
+//        } else {
+//            throw new EJBException("Dados inválidos. Verifique se os parâmetros "
+//                    + "do usuário informados não estão nulos ou vazios.");
+//        }
+        UserApp validate = validate(userApp);
+        userRepository.save(userApp);
+        queueProducer.sendMessage(userApp.getGithubAccount());
+        
+    }
+    
+    public UserApp validate(UserApp userApp) {
+        if (!isValid(userApp.getGithubAccount()) || !isValid(userApp.getLinkedinAccount())) {
+            throw new EJBException("Dados inválidos. Verifique se os parâmetros "
+                    + "do usuário informados não estão nulos ou vazios.");
+        } else {
             GithubUser githubUser = githubClient.getGithubUser(userApp.getGithubAccount());
-            if (githubUser != null) {
-                
+            if (githubUser == null) {
+                throw new EJBException("Dados inválidos. Verifique se o parâmetros estão corretos.");
+            } else {
                 userApp.setFollowersGithubURL(githubUser.getFollowersURL());
                 userApp.setOrgsGithubURL(githubUser.getOrganizationsURL());
-                userApp.setReposGithubURL(githubUser.getReposURL());
-                
-                userRepository.save(userApp);
-                
-                queueProducer.sendMessage(userApp.getGithubAccount());
+                userApp.setReposGithubURL(githubUser.getReposURL());   
+                return userApp;
             }
         }
     }
     
+    public UserApp updateUser(Long userId, SimpleUser simpleUser) {
+        //validar
+        UserApp get = userRepository.get(userId);
+        if (get != null) {
+            UserApp newUser = validate(simpleUser.toUserApp());
+            newUser.setId(userId);
+            userRepository.update(newUser);
+            queueProducer.sendMessage(newUser.getGithubAccount());
+            return get;
+        }
+        return null;
+    }
+    
+    
+    public UserApp getUser(Long userId) {
+        
+        return userRepository.get(userId);
+    }
+
+    public UserApp getUser(String userId) {
+        Long longId = new Long(userId);
+        return getUser(longId);
+    }
     
     
     public boolean isValid(String s){
@@ -60,9 +111,6 @@ public class UserService {
     }
     
     public List<GithubRepository> getAllRepositorys(UserApp user) {
-//        UserApp user = userRepository.get(new Long(idUser));
-//        return githubClient.getAllUserRepos(user.getGithubAccount());
-        
         //aqui pode alterar para ir buscar atualizar os repositórios, ou ir buscá-los novamente.
         if (user != null) {
             return user.getRepositories();
@@ -71,8 +119,7 @@ public class UserService {
     }
     
     public List<GithubRepository> getAllRepositorysByLanguage(UserApp user, String language) {
-        //UserApp user = userRepository.get(new Long(idUser));
-        //return githubClient.getAllUserReposByLanguage(user.getGithubAccount(), language);
+        
         List<GithubRepository> selectedRepos = new ArrayList<>();
         for (GithubRepository r : user.getRepositories()) {
             if (r.getLanguages().contains(language))
@@ -82,16 +129,6 @@ public class UserService {
     }
     
     public List<RankedUser> getAllHank(){
-//        List<UserApp> usersOrderedByRank = userRepository.getAllOrderByRank();
-//        
-//        List<RankedUser> allRanking = new ArrayList<>();
-//        
-//        for (int i = 0; i < usersOrderedByRank.size(); i++) {
-//            UserApp user = usersOrderedByRank.get(i);
-//            allRanking.add(new RankedUser(user.getId(), user.getRank(), i + 1));
-//        }
-//        return allRanking;
-
         return userRepository.getTotalRank();
     }
     
@@ -110,14 +147,10 @@ public class UserService {
         return userRepository.getOneRank(new Long(userId));
     } 
     
-    public UserApp getUser(String userId) {
-        Long longId = new Long(userId);
-        return userRepository.get(longId);
-    }
-
     
     public void atualizarDadosUser(String githubUserLogin) {
-        
+        System.out.println("[atualizando dados de: ]" + githubUserLogin);
+                
         UserApp userApp = userRepository.getByGithubAccount(githubUserLogin);
 
         if (userApp != null) {
@@ -128,7 +161,7 @@ public class UserService {
             while (iteratorAncienteRepo.hasNext()) {
                 GithubRepository ancientUserRepo = iteratorAncienteRepo.next();
                 if (!newRepos.contains(ancientUserRepo)) {
-                    userApp.removeRepository(ancientUserRepo);
+                    iteratorAncienteRepo.remove();
                 } else {
                     newRepos.remove(ancientUserRepo);
                 }
