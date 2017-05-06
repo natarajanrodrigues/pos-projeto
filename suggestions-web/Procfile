@@ -1,1 +1,2 @@
-web: java -jar lib/payara-micro-4.1.1.171.1.jar --deploy target/ROOT.war --port $PORT 
+# web: java -jar lib/payara-micro-4.1.1.171.1.jar --deploy target/ROOT.war --port $PORT 
+web: sh lib/run.sh
