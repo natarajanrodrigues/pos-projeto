@@ -9,7 +9,7 @@
         <property name="Password" value="4899304b73897a14faf91b173885b33bf2879e24d6b955dcdfb5159b370c9703"/>
         <property name="URL" value="jdbc:postgresql://ec2-23-23-111-171.compute-1.amazonaws.com:5432/dajp4oacqjj587"/>
         <property name="driverClass" value="org.postgresql.Driver"/>
-        <property name="driverClass" value="org.postgresql.ds.PGSimpleDataSource"/>
+        <!--<property name="driverClass" value="org.postgresql.ds.PGSimpleDataSource"/>-->
         
     </jdbc-connection-pool>
     <jdbc-resource enabled="true" jndi-name="java:app/java:jdbc/suggestions" object-type="user" pool-name="post-gre-sql_suggestions_postgresPool"/>
