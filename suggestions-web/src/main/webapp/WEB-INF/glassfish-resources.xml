@@ -7,7 +7,7 @@
         <property name="databaseName" value="dajp4oacqjj587"/>
         <property name="User" value="dsyylkchaffgme"/>
         <property name="Password" value="4899304b73897a14faf91b173885b33bf2879e24d6b955dcdfb5159b370c9703"/>
-        <property name="URL" value="postgres://dsyylkchaffgme:4899304b73897a14faf91b173885b33bf2879e24d6b955dcdfb5159b370c9703@ec2-23-23-111-171.compute-1.amazonaws.com:5432/dajp4oacqjj587"/>
+        <property name="URL" value="jdbc:postgresql://dsyylkchaffgme:4899304b73897a14faf91b173885b33bf2879e24d6b955dcdfb5159b370c9703@ec2-23-23-111-171.compute-1.amazonaws.com:5432/dajp4oacqjj587"/>
         <!--<property name="driverClass" value="org.postgresql.Driver"/>-->
         <property name="driverClass" value="org.postgresql.ds.PGSimpleDataSource"/>
         
