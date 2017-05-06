@@ -107,7 +107,21 @@ public class UserService {
     }
     
     public List<SimpleUser> getByLinkedinAndGihub(SimpleUser simpleUser) {
-        System.out.println(simpleUser);
+        
+        List<UserApp> resultSearch 
+                = userRepository.getByLinkedinAndGithubAccount(simpleUser.getGithubAccount(), simpleUser.getLinkedinAccount());
+        List<SimpleUser> resultList = new ArrayList<>();
+        
+        resultSearch.forEach((r) -> {
+            SimpleUser u = new SimpleUser(r);
+            resultList.add(u);
+        });
+                
+        return resultList;        
+    }
+    
+    public List<SimpleUser> getByLinkedinOrGihub(SimpleUser simpleUser) {
+        
         List<UserApp> resultSearch 
                 = userRepository.getByLinkedinOrGithubAccount(simpleUser.getGithubAccount(), simpleUser.getLinkedinAccount());
         List<SimpleUser> resultList = new ArrayList<>();

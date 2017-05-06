@@ -18,7 +18,7 @@
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-    
+
     <dependencies>
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
@@ -65,7 +65,7 @@
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>9.4-1203-jdbc42</version>
+            <version>9.4.1209.jre7</version>
         </dependency>
         <dependency>
             <groupId>javax</groupId>
@@ -76,7 +76,7 @@
     </dependencies>
 
     <build>
-        <finalName>ROOT.war</finalName>
+        <finalName>suggestions-web</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
