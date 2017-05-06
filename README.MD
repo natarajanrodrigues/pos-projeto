@@ -1,6 +1,6 @@
 ### Passo a passo para rodar o Suggestions API
 
-Esta versão do Suggestions roda sobre o Docker. Abaixo seguem os passos para inicializar e utiliza-lo.
+Esta versão do Suggestions roda sobre o Docker. Abaixo seguem os passos para inicializa-lo.
 
 
 1. Certifique-se que seu serviço Docker esteja rodando.

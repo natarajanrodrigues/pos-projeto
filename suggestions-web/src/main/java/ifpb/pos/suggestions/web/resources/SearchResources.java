@@ -48,6 +48,21 @@ public class SearchResources {
         
     }
     
+    @GET
+    @Path("user/in")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchByLinkedinOrGithub(
+            @QueryParam("github_account") String github, 
+            @QueryParam("linkedin_account") String linkedin ){
+        
+        SimpleUser simpleUser = new SimpleUser(github, linkedin);
+        
+        List<SimpleUser> byLinkedinAndGihub = userService.getByLinkedinOrGihub(simpleUser);
+        GenericEntity<List<SimpleUser>> entity = new GenericEntity<List<SimpleUser>>(byLinkedinAndGihub) {};
+            return Response.ok().entity(entity).build();
+        
+    }
+    
     
     
 }

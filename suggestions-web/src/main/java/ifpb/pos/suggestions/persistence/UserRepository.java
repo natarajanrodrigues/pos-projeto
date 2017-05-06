@@ -97,6 +97,24 @@ public class UserRepository {
         }
     }
     
+    public List<UserApp> getByLinkedinAndGithubAccount(String gitAccount, String linkedinAccount) {
+        try {
+            TypedQuery<UserApp> query = em
+                    .createQuery("SELECT u FROM UserApp u"
+                            + " WHERE u.linkedinAccount = :linkAccount AND u.githubAccount = :gitAccount", UserApp.class)
+                    .setParameter("linkAccount", linkedinAccount)
+                    .setParameter("gitAccount", gitAccount);
+
+            List<UserApp> resultList = query.getResultList();
+            System.out.println(resultList.size());
+            return resultList;
+                    
+        } catch (NoResultException e) {
+            System.out.println("Não conseguiu pegar o usuário");
+            return null;
+        }
+    }
+    
     public List<UserApp> getAllOrderByRank() {
         return em.createQuery("FROM UserApp u ORDER BY u.rank DESC", UserApp.class).getResultList();
     }
