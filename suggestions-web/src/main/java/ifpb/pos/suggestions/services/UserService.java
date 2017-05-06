@@ -55,7 +55,7 @@ public class UserService {
         } else {
             GithubUser githubUser = githubClient.getGithubUser(userApp.getGithubAccount());
             if (githubUser == null) {
-                throw new EJBException("Dados inválidos. Verifique se o parâmetros estão corretos.");
+                throw new EJBException("Usuário de Github inválido.");
             } else {
                 userApp.setFollowersGithubURL(githubUser.getFollowersURL());
                 userApp.setOrgsGithubURL(githubUser.getOrganizationsURL());
@@ -74,17 +74,6 @@ public class UserService {
             throw new EJBException("Já existe cliente com os dados informados.");
     }
     
-    private void validateToUpdate(SimpleUser simpleUser) {
-        System.out.println("USER to update validate: " + simpleUser);
-        UserApp byGithubAccount = userRepository.getByGithubAccount(simpleUser.getGithubAccount());
-        UserApp byLinkedinAccount = userRepository.getByLinkedinAccount(simpleUser.getLinkedinAccount());
-        if (byGithubAccount != null && !byGithubAccount.getId().equals(simpleUser.getId()) )
-            throw new EJBException("Já existe cliente com esta conta de github.");
-        if (byLinkedinAccount != null && !byLinkedinAccount.getId().equals(simpleUser.getId()))
-            throw new EJBException("Já existe cliente com esta conta de linkedin.");
-        
-    }
-    
     public UserApp updateUser(Long userId, SimpleUser simpleUser) {
         //validar
         
@@ -101,6 +90,16 @@ public class UserService {
         return null;
     }
     
+    private void validateToUpdate(SimpleUser simpleUser) {
+        System.out.println("USER to update validate: " + simpleUser);
+        UserApp byGithubAccount = userRepository.getByGithubAccount(simpleUser.getGithubAccount());
+        UserApp byLinkedinAccount = userRepository.getByLinkedinAccount(simpleUser.getLinkedinAccount());
+        if (byGithubAccount != null && !byGithubAccount.getId().equals(simpleUser.getId()) )
+            throw new EJBException("Já existe cliente com esta conta de github.");
+        if (byLinkedinAccount != null && !byLinkedinAccount.getId().equals(simpleUser.getId()))
+            throw new EJBException("Já existe cliente com esta conta de linkedin.");
+        
+    }
     
     public UserApp getUser(Long userId) {
         
