@@ -16,7 +16,7 @@ import javax.persistence.Table;
  *
  * @author natarajan
  */
-@Entity
+//@Entity
 //@Table(name = "ranking")
 //@NamedQuery(name = "Ranking.all", query = "FROM Ranking")
 //@NamedQueries({
@@ -27,7 +27,7 @@ import javax.persistence.Table;
 public class RankedUser implements Serializable{
     private static final long serialVersionUID = 1989L;
     
-    @Id
+//    @Id
     private Long idUser;
     private double ranking;
     private Long rankingPosition;

@@ -38,33 +38,17 @@ public class UserService {
     public UserService() {   
     }
 
-    public void createUser(UserApp userApp){
-//        if (isValid(userApp.getGithubAccount()) && isValid(userApp.getLinkedinAccount())) {
-//
-//            GithubUser githubUser = githubClient.getGithubUser(userApp.getGithubAccount());
-//            if (githubUser != null) {
-//                
-//                userApp.setFollowersGithubURL(githubUser.getFollowersURL());
-//                userApp.setOrgsGithubURL(githubUser.getOrganizationsURL());
-//                userApp.setReposGithubURL(githubUser.getReposURL());
-//                
-//                userRepository.save(userApp);
-//                
-//                queueProducer.sendMessage(userApp.getGithubAccount());
-//            } else {
-//                throw new EJBException("Dados inválidos. Verifique se o parâmetros estão corretos.");
-//            }
-//        } else {
-//            throw new EJBException("Dados inválidos. Verifique se os parâmetros "
-//                    + "do usuário informados não estão nulos ou vazios.");
-//        }
+    public Long createUser(UserApp userApp){
+        
+        validatePreExistingUserToCreate(userApp);
         UserApp validate = validate(userApp);
-        userRepository.save(userApp);
+        Long idSaved = userRepository.save(userApp);
         queueProducer.sendMessage(userApp.getGithubAccount());
+        return idSaved;
         
     }
     
-    public UserApp validate(UserApp userApp) {
+    private UserApp validate(UserApp userApp) {
         if (!isValid(userApp.getGithubAccount()) || !isValid(userApp.getLinkedinAccount())) {
             throw new EJBException("Dados inválidos. Verifique se os parâmetros "
                     + "do usuário informados não estão nulos ou vazios.");
@@ -81,9 +65,32 @@ public class UserService {
         }
     }
     
+    private void validatePreExistingUserToCreate(UserApp userApp) {
+        
+        List<UserApp> result = userRepository.getByLinkedinOrGithubAccount(
+                userApp.getGithubAccount(), 
+                userApp.getLinkedinAccount());
+        if (result.size() > 0 )
+            throw new EJBException("Já existe cliente com os dados informados.");
+    }
+    
+    private void validateToUpdate(SimpleUser simpleUser) {
+        System.out.println("USER to update validate: " + simpleUser);
+        UserApp byGithubAccount = userRepository.getByGithubAccount(simpleUser.getGithubAccount());
+        UserApp byLinkedinAccount = userRepository.getByLinkedinAccount(simpleUser.getLinkedinAccount());
+        if (byGithubAccount != null && !byGithubAccount.getId().equals(simpleUser.getId()) )
+            throw new EJBException("Já existe cliente com esta conta de github.");
+        if (byLinkedinAccount != null && !byLinkedinAccount.getId().equals(simpleUser.getId()))
+            throw new EJBException("Já existe cliente com esta conta de linkedin.");
+        
+    }
+    
     public UserApp updateUser(Long userId, SimpleUser simpleUser) {
         //validar
+        
         UserApp get = userRepository.get(userId);
+        simpleUser.setId(userId);
+        validateToUpdate(simpleUser);
         if (get != null) {
             UserApp newUser = validate(simpleUser.toUserApp());
             newUser.setId(userId);
@@ -98,6 +105,20 @@ public class UserService {
     public UserApp getUser(Long userId) {
         
         return userRepository.get(userId);
+    }
+    
+    public List<SimpleUser> getByLinkedinAndGihub(SimpleUser simpleUser) {
+        System.out.println(simpleUser);
+        List<UserApp> resultSearch 
+                = userRepository.getByLinkedinOrGithubAccount(simpleUser.getGithubAccount(), simpleUser.getLinkedinAccount());
+        List<SimpleUser> resultList = new ArrayList<>();
+        
+        resultSearch.forEach((r) -> {
+            SimpleUser u = new SimpleUser(r);
+            resultList.add(u);
+        });
+                
+        return resultList;        
     }
 
     public UserApp getUser(String userId) {

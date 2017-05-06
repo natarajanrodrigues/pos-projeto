@@ -26,8 +26,10 @@ public class UserRepository {
     @PersistenceContext
     private EntityManager em;
     
-    public void save(UserApp user) {
+    public Long save(UserApp user) {
         em.persist(user);
+        em.flush();
+        return user.getId();
     }
     
     public void update(UserApp user){
@@ -64,12 +66,35 @@ public class UserRepository {
     }
     
     public UserApp getByLinkedinAccount(String linkedinAccount) {
-        TypedQuery<UserApp> query = em
-                .createQuery("SELECT u FROM UserApp u"
-                + " WHERE u.linkedinactcoun = :account", UserApp.class)
-                .setParameter("account", linkedinAccount);
-        
-        return query.getSingleResult();        
+        try {
+            TypedQuery<UserApp> query = em
+                    .createQuery("SELECT u FROM UserApp u"
+                            + " WHERE u.linkedinAccount = :account", UserApp.class)
+                    .setParameter("account", linkedinAccount);
+
+            return query.getSingleResult();
+        } catch (NoResultException e) {
+            System.out.println("Não conseguiu pegar o usuário");
+            return null;
+        }
+    }
+    
+    public List<UserApp> getByLinkedinOrGithubAccount(String gitAccount, String linkedinAccount) {
+        try {
+            TypedQuery<UserApp> query = em
+                    .createQuery("SELECT u FROM UserApp u"
+                            + " WHERE u.linkedinAccount = :linkAccount OR u.githubAccount = :gitAccount", UserApp.class)
+                    .setParameter("linkAccount", linkedinAccount)
+                    .setParameter("gitAccount", gitAccount);
+
+            List<UserApp> resultList = query.getResultList();
+            System.out.println(resultList.size());
+            return resultList;
+                    
+        } catch (NoResultException e) {
+            System.out.println("Não conseguiu pegar o usuário");
+            return null;
+        }
     }
     
     public List<UserApp> getAllOrderByRank() {
@@ -133,5 +158,6 @@ public class UserRepository {
 
         return new RankedUser(new Long(iduser), ranking, rankingposition);
     }
+    
 
 }

@@ -28,6 +28,8 @@ public class SimpleUser implements Serializable {
     }
 
     public SimpleUser(String githubAccount, String linkedinAccount) {
+        this.githubAccount = githubAccount;
+        this.linkedinAccount = linkedinAccount;
     }
 
     public Long getId() {
