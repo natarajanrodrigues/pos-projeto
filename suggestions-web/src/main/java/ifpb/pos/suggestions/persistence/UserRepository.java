@@ -9,6 +9,7 @@ import ifpb.pos.suggestions.models.RankedUser;
 import ifpb.pos.suggestions.models.UserApp;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.sql.DataSourceDefinition;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -20,6 +21,15 @@ import javax.persistence.TypedQuery;
  *
  * @author natarajan
  */
+@DataSourceDefinition(
+        name = "java:app/java:jdbc/suggestions",
+        className = "org.postgresql.Driver",
+        url = "jdbc:postgresql://dsyylkchaffgme:4899304b73897a14faf91b173885b33bf2879e24d6b955dcdfb5159b370c9703@ec2-23-23-111-171.compute-1.amazonaws.com:5432/dajp4oacqjj587",
+//        url = "jdbc:postgresql://localhost:5432/hotel",
+        user = "dsyylkchaffgme",
+        password = "4899304b73897a14faf91b173885b33bf2879e24d6b955dcdfb5159b370c9703"
+)
+
 @Stateless
 public class UserRepository {
     
