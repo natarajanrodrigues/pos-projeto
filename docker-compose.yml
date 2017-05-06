@@ -1,0 +1,28 @@
+version: '2'
+services:
+  postgres:
+    container_name: suggestions-postgres
+    image: natarajan/suggestions-db
+    build: ./suggestions-web/postgres
+    ports:
+     - "5454:5432"
+    expose:
+     - 5454
+    volumes:
+     - postgres-volume-suggestions:/var/lib/postgresql/data/
+  web:
+    container_name: suggestions-web
+    build: ./suggestions-web
+    image: natarajan/suggestions-web
+    ports:
+     - "8090:8080"
+     - "4990:4848"
+    links:
+     - "postgres:suggestions-banco"
+networks:
+  default:
+    external:
+      name: cliente_default_ntw
+volumes:
+    postgres-volume-suggestions:
+      driver: local
