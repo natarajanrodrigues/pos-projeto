@@ -22,5 +22,5 @@ nb-configuration.xml
 
 
 #don't ignore payara
-!lib/* 
-!*lib/*
+!payara-micro-4.1.1.171.1.jar 
+!*payara-micro-4.1.1.171.1.jar/
