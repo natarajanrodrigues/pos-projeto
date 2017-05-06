@@ -19,3 +19,8 @@ nb-configuration.xml
 #intelliJ config files
 .idea/
 *.iml
+
+
+#don't ignore payara
+!payara-micro-4.1.1.171.1.jar 
+!*payara-micro-4.1.1.171.1.jar/
