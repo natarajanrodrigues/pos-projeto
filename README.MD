@@ -5,7 +5,9 @@ Esta versão do Suggestions roda sobre o Docker. Abaixo seguem os passos para in
 
 1. Certifique-se que seu serviço Docker esteja rodando.
 
-2. Inicialize o `docker-compose` incluso no projeto. Para isso, já provemos um script sh que pode ser executado da seguinte forma:
+2. No terminal de linha de comando, execute `docker network create cliente_default_ntw`. Este comando é necessário para criarmos a rede docker que será usada para comunicação entre os containers da aplicação e do banco de dados.
+
+3. Inicialize o `docker-compose` incluso no projeto. Para isso, já provemos um script sh que pode ser executado da seguinte forma:
 
     a. **unix/Linux/macOs**
       Numa janela de terminal, navegue até o caminho da pasta raiz deste projeto.
@@ -21,7 +23,7 @@ Esta versão do Suggestions roda sobre o Docker. Abaixo seguem os passos para in
       sh run.sh
     ```
 
-3. Depois de alguns instantes, tente abrir o seguinte caminho no navegador: [http://localhost:8090/suggestions-web/](http://localhost:8090/suggestions-web/). Depois de inicializado, o serviço deve mostrar um mensagem de boas vidas.
+4. Depois de alguns instantes, tente abrir o seguinte caminho no navegador: [http://localhost:8090/suggestions-web/](http://localhost:8090/suggestions-web/). Depois de inicializado, o serviço deve mostrar um mensagem de boas vidas.
 
 
 Para utilizar o Suggestions, comece visitando a [documentação da API](https://natarajanrodrigues.gitbooks.io/suggestions-api/content/) para ver exemplos de uso e outras descrições.
