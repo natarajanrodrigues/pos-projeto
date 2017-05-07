@@ -14,7 +14,7 @@ Esta versão do Suggestions roda sobre o Docker. Abaixo seguem os passos para in
       sh run.sh
     ```
 
-    b. **Windows (versões que contém powershel - Windows 8 ou +):**
+    b. **Windows (versões que contém powershell - Windows 8 ou +):**
       Dentro da pasta raiz deste projeto, clique no arquivo `run.sh`; ou então, através de um terminal de comando, navegue até a pasta raiz deste projeto e execute:
 
     ```
