@@ -23,7 +23,7 @@ import javax.jms.MessageListener;
 @MessageDriven(
         activationConfig = {
             @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"), 
-            @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "jms/suggQueue")
+            @ActivationConfigProperty(propertyName = "destinationLookup", propertyValue = "java:global/jms/suggQueue")
         }
 )
 public class CadastroListener implements MessageListener {

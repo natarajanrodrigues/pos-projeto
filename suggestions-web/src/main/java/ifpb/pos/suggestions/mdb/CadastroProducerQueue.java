@@ -5,11 +5,9 @@
  */
 package ifpb.pos.suggestions.mdb;
 
-import javax.annotation.Resource;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.jms.Destination;
-import javax.jms.JMSConnectionFactory;
 import javax.jms.JMSContext;
 import javax.jms.JMSProducer;
 import javax.jms.Queue;
@@ -22,13 +20,12 @@ import javax.jms.TextMessage;
 
 @Stateless
 public class CadastroProducerQueue {
-    
-    @Inject
-    @JMSConnectionFactory("jms/suggCon")
+        
+    @Inject 
     private JMSContext context;
-
-    @Resource(lookup="jms/suggQueue")
-    Queue queue;
+    
+    @Inject @MyQueue
+    private Queue queue;
     
     public void sendMessage(String userIdString){
         JMSProducer producer = context.createProducer();
